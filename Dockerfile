@@ -1,0 +1,28 @@
+FROM alpine:3.10
+
+ENV LANG=C.UTF-8
+
+RUN apk add --no-cache --update ca-certificates \
+    && addgroup user \
+    && adduser -h /home/user -s /bin/sh -D -G user user \
+    && mkdir -p /home/user/.dropbox /home/user/Dropbox \
+    && cd /home/user && wget -O - https://www.dropbox.com/download?plat=lnx.x86_64 | tar xzf - \
+    && wget https://www.dropbox.com/download?dl=packages/dropbox.py -O /usr/local/bin/dropbox-cli \
+    && wget https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -O /etc/apk/keys/sgerrand.rsa.pub \
+    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-2.29-r0.apk \
+            https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-bin-2.29-r0.apk \
+            https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.29-r0/glibc-i18n-2.29-r0.apk \
+    && apk add --no-cache glibc-2.29-r0.apk glibc-bin-2.29-r0.apk glibc-i18n-2.29-r0.apk python3 \
+    && /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 "$LANG" || true \
+    && echo "export LANG=$LANG" > /etc/profile.d/locale.sh \
+    && chmod +x /usr/local/bin/dropbox-cli \
+    && chown user:user -R /home/user/ /usr/local/bin/dropbox-cli \
+    && apk del glibc-i18n \
+    && rm glibc-2.29-r0.apk glibc-bin-2.29-r0.apk glibc-i18n-2.29-r0.apk /etc/apk/keys/sgerrand.rsa.pub \
+    && echo "Installed Dropbox version:" $(cat /home/user/.dropbox-dist/VERSION)
+
+USER user
+EXPOSE 17500
+WORKDIR /home/user/Dropbox
+VOLUME ["/home/user/Dropbox", "/home/user/.dropbox"]
+CMD ["/home/user/.dropbox-dist/dropboxd"]
