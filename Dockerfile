@@ -1,11 +1,15 @@
 FROM alpine:3.10
 
 ARG GLIBC_VERSION=2.29-r0
+
+ARG UID=1000
+ARG GID=1000
+
 ENV LANG=C.UTF-8
 
 RUN apk add --no-cache --update ca-certificates \
-    && addgroup user \
-    && adduser -h /home/user -s /bin/sh -D -G user user \
+    && addgroup -g $GID user \
+    && adduser -u $UID -h /home/user -s /bin/sh -D -G user user \
     && mkdir -p /home/user/.dropbox /home/user/Dropbox \
     && cd /home/user && wget -O - https://www.dropbox.com/download?plat=lnx.x86_64 | tar xzf - \
     && wget https://www.dropbox.com/download?dl=packages/dropbox.py -O /usr/local/bin/dropbox-cli \
