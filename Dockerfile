@@ -8,8 +8,7 @@ ARG GID=100
 ENV LANG=C.UTF-8
 
 RUN apk add --no-cache --update ca-certificates \
-    && addgroup -g $GID user \
-    && adduser -u $UID -h /home/user -s /bin/sh -D -G user user \
+    && adduser -u $UID -h /home/user -s /bin/sh -D -G users user \
     && mkdir -p /home/user/.dropbox /home/user/Dropbox \
     && cd /home/user && wget -O - https://www.dropbox.com/download?plat=lnx.x86_64 | tar xzf - \
     && wget https://www.dropbox.com/download?dl=packages/dropbox.py -O /usr/local/bin/dropbox-cli \
@@ -21,7 +20,7 @@ RUN apk add --no-cache --update ca-certificates \
     && /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 "$LANG" || true \
     && echo "export LANG=$LANG" > /etc/profile.d/locale.sh \
     && chmod +x /usr/local/bin/dropbox-cli \
-    && chown user:user -R /home/user/ /usr/local/bin/dropbox-cli \
+    && chown user:users -R /home/user/ /usr/local/bin/dropbox-cli \
     && apk del glibc-i18n \
     && rm glibc-$GLIBC_VERSION.apk glibc-bin-$GLIBC_VERSION.apk glibc-i18n-$GLIBC_VERSION.apk /etc/apk/keys/sgerrand.rsa.pub \
     && echo "Installed Dropbox version:" $(cat /home/user/.dropbox-dist/VERSION)
